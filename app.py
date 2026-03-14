@@ -44,10 +44,23 @@ with st.sidebar:
             profile = profile_dataset(st.session_state["df"])
             formatted = format_profile(profile)
 
+            # Save charts as images
+            import tempfile
+            chart_paths = []
+            for msg in st.session_state["messages"]:
+                if "chart" in msg and msg["chart"] is not None:
+                    try:
+                        chart_path = os.path.join(tempfile.gettempdir(), f"chart_{len(chart_paths)}.png")
+                        msg["chart"].write_image(chart_path)
+                        chart_paths.append(chart_path)
+                    except Exception:
+                        pass
+
             pdf_path = generate_report(
                 profile=profile,
                 formatted_profile=formatted,
                 chat_history=st.session_state["chat_history"],
+                charts=chart_paths,
             )
 
             with open(pdf_path, "rb") as f:
