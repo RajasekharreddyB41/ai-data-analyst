@@ -1,6 +1,6 @@
-import os
 import streamlit as st
 import pandas as pd
+import os
 from graph.agent import build_graph
 from utils.profiler import profile_dataset, format_profile
 from utils.report import generate_report
@@ -44,20 +44,10 @@ with st.sidebar:
             profile = profile_dataset(st.session_state["df"])
             formatted = format_profile(profile)
 
-            # Save charts as images
-            chart_paths = []
-            for msg in st.session_state["messages"]:
-                if "chart" in msg and msg["chart"] is not None:
-                    import tempfile
-                    chart_path = os.path.join(tempfile.gettempdir(), f"chart_{len(chart_paths)}.png")
-                    msg["chart"].write_image(chart_path)
-                    chart_paths.append(chart_path)
-
             pdf_path = generate_report(
                 profile=profile,
                 formatted_profile=formatted,
                 chat_history=st.session_state["chat_history"],
-                charts=chart_paths,
             )
 
             with open(pdf_path, "rb") as f:
