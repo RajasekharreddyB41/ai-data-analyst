@@ -37,40 +37,6 @@ with st.sidebar:
         st.session_state["messages"] = []
         st.rerun()
 
-    # Download report button
-    if "df" in st.session_state and st.session_state["chat_history"]:
-        st.markdown("---")
-        if st.button("📥 Download Report (PDF)"):
-            profile = profile_dataset(st.session_state["df"])
-            formatted = format_profile(profile)
-
-            # Save charts as images
-            import tempfile
-            chart_paths = []
-            for msg in st.session_state["messages"]:
-                if "chart" in msg and msg["chart"] is not None:
-                    try:
-                        chart_path = os.path.join(tempfile.gettempdir(), f"chart_{len(chart_paths)}.png")
-                        msg["chart"].write_image(chart_path)
-                        chart_paths.append(chart_path)
-                    except Exception:
-                        pass
-
-            pdf_path = generate_report(
-                profile=profile,
-                formatted_profile=formatted,
-                chat_history=st.session_state["chat_history"],
-                charts=chart_paths,
-            )
-
-            with open(pdf_path, "rb") as f:
-                st.download_button(
-                    label="💾 Save Report",
-                    data=f,
-                    file_name="analysis_report.pdf",
-                    mime="application/pdf",
-                )
-
 # File upload
 uploaded_file = st.file_uploader("Upload your CSV or Excel file", type=["csv", "xlsx"])
 
@@ -175,5 +141,61 @@ if uploaded_file:
 
     elif query and "api_key" not in st.session_state:
         st.warning("⚠️ Please enter your Groq API key in the sidebar first.")
+
+    # Download report button - after chat
+    if len(st.session_state.get("messages", [])) >= 2:
+        st.markdown("---")
+        if st.button("📥 Download Report (PDF)"):
+            import tempfile
+            profile = profile_dataset(df)
+            formatted = format_profile(profile)
+
+            chart_paths = []
+            for msg in st.session_state["messages"]:
+                if "chart" in msg and msg["chart"] is not None:
+                    try:
+                        import copy
+                        chart_path = os.path.join(tempfile.gettempdir(), f"chart_{len(chart_paths)}.png")
+                        fig_copy = copy.deepcopy(msg["chart"])
+                        fig_copy.update_layout(
+                            paper_bgcolor="white",
+                            plot_bgcolor="white",
+                            font=dict(color="black", size=14),
+                            title=dict(font=dict(size=18, color="black")),
+                            xaxis=dict(
+                                title_font=dict(size=14, color="black"),
+                                tickfont=dict(size=12, color="black"),
+                                gridcolor="lightgray",
+                            ),
+                            yaxis=dict(
+                                title_font=dict(size=14, color="black"),
+                                tickfont=dict(size=12, color="black"),
+                                gridcolor="lightgray",
+                            ),
+                            width=800,
+                            height=500,
+                            template="plotly",
+                        )
+                        fig_copy.update_traces(marker_color="#636EFA")
+                        fig_copy.write_image(chart_path, scale=2)
+                        chart_paths.append(chart_path)
+                    except Exception:
+                        pass
+
+            pdf_path = generate_report(
+                profile=profile,
+                formatted_profile=formatted,
+                chat_history=st.session_state["chat_history"],
+                charts=chart_paths,
+            )
+
+            with open(pdf_path, "rb") as f:
+                st.download_button(
+                    label="💾 Save Report",
+                    data=f,
+                    file_name="analysis_report.pdf",
+                    mime="application/pdf",
+                )
+
 else:
     st.info("👆 Upload a CSV or Excel file to get started.")
