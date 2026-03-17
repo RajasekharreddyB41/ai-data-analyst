@@ -39,18 +39,7 @@ The agent uses a LangGraph state graph with conditional edges:
 ## Getting Started
 
 ### Prerequisites
-- Python 3.11+
 - Free Groq API key from [console.groq.com](https://console.groq.com)
-
-### Local Setup
-```bash
-git clone https://github.com/RajasekharreddyB41/ai-data-analyst.git
-cd ai-data-analyst
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-streamlit run app.py
-```
 
 ### Usage
 1. Enter your Groq API key in the sidebar
