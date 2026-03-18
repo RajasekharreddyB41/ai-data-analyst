@@ -64,8 +64,3 @@ The agent uses a LangGraph state graph with conditional edges:
 MIT
 ```
 
-Save the file. Now push this update:
-```
-git add .
-git commit -m "Add professional README"
-git push
